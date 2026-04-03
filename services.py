@@ -70,14 +70,13 @@ def get_monthly_summary(session, year, month):
         .filter(extract("year", Expense.expense_date) == year)
         .filter(extract("month", Expense.expense_date) == month)
         .scalar()
-    )
+          )
 
     return {
         "month_income": payments_total,
         "month_expenses": expenses_total,
         "month_profit": payments_total - expenses_total,
-    }
-
+     }
 def get_package_profitability(session):
     contracts = get_all_contracts(session)
     result = []
@@ -85,6 +84,7 @@ def get_package_profitability(session):
     for contract in contracts:
         total_paid = sum(p.amount for p in contract.payments)
         total_expenses = sum(e.amount for e in contract.expenses)
+        remaining = contract.agreed_price - total_paid
         profit = total_paid - total_expenses
 
         result.append({
@@ -93,8 +93,11 @@ def get_package_profitability(session):
             "package_name": contract.package.package_name,
             "agreed_price": contract.agreed_price,
             "total_paid": total_paid,
+            "remaining": remaining,
             "total_expenses": total_expenses,
             "profit": profit,
+            "status": contract.status,
         })
 
+    return result
     return result
