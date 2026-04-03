@@ -1,4 +1,5 @@
 import streamlit as st
+from auth import login_required, show_logout
 import pandas as pd
 from datetime import date
 from database import SessionLocal
@@ -6,7 +7,7 @@ from models import create_tables
 from services import get_dashboard_metrics, get_monthly_summary, get_package_profitability
 
 st.set_page_config(page_title="Media Finance System", layout="wide")
-
+from auth import login_required, show_logout
 create_tables()
 session = SessionLocal()
 

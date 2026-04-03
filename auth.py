@@ -22,3 +22,9 @@ def login_required():
                 st.error("Invalid username or password")
 
         st.stop()
+
+
+def show_logout():
+    if st.sidebar.button("Logout"):
+        st.session_state.logged_in = False
+        st.rerun()
