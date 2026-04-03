@@ -7,7 +7,7 @@ from models import create_tables
 from seed import seed_packages
 from services import get_dashboard_metrics, get_monthly_summary, get_package_profitability
 
-st.set_page_config(page_title="Media Finance Manager", layout="wide", page_icon="📊")
+st.set_page_config(page_title="Qeblah Finance Manager", layout="wide", page_icon="📊")
 login_required()
 show_logout()
 
