@@ -60,5 +60,5 @@ class Expense(Base):
      notes = Column(Text, nullable=True)
      contract = relationship("Contract", back_populates="expenses")
 
-def create_tables():
+def create_tables(): # 002_app.py
     Base.metadata.create_all(bind=engine)
