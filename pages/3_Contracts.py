@@ -63,6 +63,6 @@ if contracts:
         }
         for c in contracts
     ])
-    st.dataframe(df, use_container_width=True)
+    st.dataframe(df, width="stretch")
 else:
     st.info("No contracts yet")

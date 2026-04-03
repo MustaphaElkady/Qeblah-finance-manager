@@ -41,6 +41,6 @@ if clients:
         }
         for c in clients
     ])
-    st.dataframe(df, use_container_width=True)
+    st.dataframe(df, width="stretch")
 else:
     st.info("No clients yet")

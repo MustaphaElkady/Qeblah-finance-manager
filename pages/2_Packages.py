@@ -44,6 +44,6 @@ if packages:
         }
         for p in packages
     ])
-    st.dataframe(df, use_container_width=True)
+    st.dataframe(df, width="stretch")
 else:
     st.info("No packages yet")

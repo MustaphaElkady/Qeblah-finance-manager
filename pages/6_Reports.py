@@ -65,9 +65,15 @@ if data:
         "profit": "Profit",
         "status": "Status"
     })
-
+    csv_data = display_df.to_csv(index=False).encode("utf-8")
+    st.download_button(
+    label="Download Report as CSV",
+    data=csv_data,
+    file_name="reports.csv",
+    mime="text/csv"
+     )
     if not display_df.empty:
-        st.dataframe(display_df, use_container_width=True)
+        st.dataframe(display_df, width="stretch")
 
         st.subheader("Summary")
         st.write("Total Agreed Price:", filtered_df["agreed_price"].sum())
