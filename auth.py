@@ -1,7 +1,7 @@
 import streamlit as st
 
-DEFAULT_USERNAME = "admin"
-DEFAULT_PASSWORD = "admin123"
+DEFAULT_USERNAME = "mans"
+DEFAULT_PASSWORD = "mans123"
 
 def login_required():
     if "logged_in" not in st.session_state:
