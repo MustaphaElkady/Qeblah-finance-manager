@@ -15,7 +15,7 @@ create_tables()
 seed_packages()
 session = SessionLocal()
 
-st.title("Media Finance Manager")
+st.title("Qeblah Finance Manager")
 st.caption("Client-ready dashboard for media packages, contracts, payments, expenses, and profitability.")
 
 metrics = get_dashboard_metrics(session)
