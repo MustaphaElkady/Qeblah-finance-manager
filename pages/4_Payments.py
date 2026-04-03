@@ -22,6 +22,8 @@ else:
             for c in contracts
         }
 
+        contract_lookup = {c.id: c for c in contracts}
+
         contract_label = st.selectbox("Contract", list(contract_map.keys()))
         payment_date = st.date_input("Payment Date", value=date.today())
         amount = st.number_input("Amount", min_value=0.0, step=100.0)
@@ -31,31 +33,38 @@ else:
         submitted = st.form_submit_button("Add Payment")
 
         if submitted:
-            payment = Payment(
-                contract_id=contract_map[contract_label],
-                payment_date=payment_date,
-                amount=amount,
-                payment_method=payment_method,
-                notes=notes
-            )
-            session.add(payment)
-            session.commit()
-            st.success("Payment added successfully")
+            if amount <= 0:
+                st.error("Amount must be greater than 0.")
+            else:
+                payment = Payment(
+                    contract_id=contract_map[contract_label],
+                    payment_date=payment_date,
+                    amount=amount,
+                    payment_method=payment_method,
+                    notes=notes
+                )
+                session.add(payment)
+                session.commit()
+                st.success("Payment added successfully")
 
     all_payments = session.query(Payment).all()
 
     if all_payments:
-        df = pd.DataFrame([
-            {
+        rows = []
+        for p in all_payments:
+            contract = contract_lookup.get(p.contract_id)
+            rows.append({
                 "ID": p.id,
                 "Contract ID": p.contract_id,
+                "Client": contract.client.name if contract else "",
+                "Package": contract.package.package_name if contract else "",
                 "Payment Date": p.payment_date,
                 "Amount": p.amount,
                 "Method": p.payment_method,
                 "Notes": p.notes
-            }
-            for p in all_payments
-        ])
+            })
+
+        df = pd.DataFrame(rows)
         st.dataframe(df, use_container_width=True)
     else:
         st.info("No payments yet")

@@ -31,17 +31,22 @@ else:
         submitted = st.form_submit_button("Add Contract")
 
         if submitted:
-            contract = Contract(
-                client_id=client_map[client_label],
-                package_id=package_map[package_label],
-                start_date=start_date,
-                end_date=end_date,
-                agreed_price=agreed_price,
-                status=status
-            )
-            session.add(contract)
-            session.commit()
-            st.success("Contract added successfully")
+            if end_date < start_date:
+                st.error("End Date cannot be earlier than Start Date.")
+            elif agreed_price <= 0:
+                st.error("Agreed Price must be greater than 0.")
+            else:
+                contract = Contract(
+                    client_id=client_map[client_label],
+                    package_id=package_map[package_label],
+                    start_date=start_date,
+                    end_date=end_date,
+                    agreed_price=agreed_price,
+                    status=status
+                )
+                session.add(contract)
+                session.commit()
+                st.success("Contract added successfully")
 
 contracts = get_all_contracts(session)
 

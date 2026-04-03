@@ -39,24 +39,29 @@ def get_contract_summary(session, contract_id):
     "total_expenses": total_expenses,
     "profit": profit,
     "status": contract.status,
-}
-
+     }
 def get_dashboard_metrics(session):
     total_clients = session.query(Client).count()
     total_contracts = session.query(Contract).count()
+    active_contracts = session.query(Contract).filter(Contract.status == "Active").count()
 
+    total_agreed = session.query(func.coalesce(func.sum(Contract.agreed_price), 0)).scalar()
     total_payments = session.query(func.coalesce(func.sum(Payment.amount), 0)).scalar()
     total_expenses = session.query(func.coalesce(func.sum(Expense.amount), 0)).scalar()
+
+    total_remaining = total_agreed - total_payments
     total_profit = total_payments - total_expenses
 
     return {
         "total_clients": total_clients,
         "total_contracts": total_contracts,
+        "active_contracts": active_contracts,
+        "total_agreed": total_agreed,
         "total_payments": total_payments,
+        "total_remaining": total_remaining,
         "total_expenses": total_expenses,
         "total_profit": total_profit,
-    }
-
+     }
 def get_monthly_summary(session, year, month):
     payments_total = (
         session.query(func.coalesce(func.sum(Payment.amount), 0))
