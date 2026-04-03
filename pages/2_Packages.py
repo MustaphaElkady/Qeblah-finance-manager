@@ -1,9 +1,9 @@
-import streamlit as st
 import pandas as pd
-from database import SessionLocal
-from models import Package, create_tables
-from services import get_all_packages
+import streamlit as st
 from auth import login_required, show_logout
+from database import SessionLocal
+from models import Package, Contract, create_tables
+from services import get_all_packages
 
 st.set_page_config(page_title="Packages", layout="wide")
 login_required()
@@ -29,7 +29,6 @@ with tab1:
                 st.error("Package name is required")
             else:
                 existing_package = session.query(Package).filter(Package.package_name == package_name.strip()).first()
-
                 if existing_package:
                     st.error("This package already exists.")
                 else:
@@ -37,28 +36,28 @@ with tab1:
                         package_name=package_name.strip(),
                         package_type=package_type,
                         default_price=default_price,
-                        description=description
+                        description=description,
                     )
                     session.add(package)
                     session.commit()
                     st.success("Package added successfully")
+                    st.rerun()
 
 with tab2:
     packages = get_all_packages(session)
-
     if packages:
         package_map = {f"{p.id} - {p.package_name}": p.id for p in packages}
         selected_package_label = st.selectbox("Select Package to Edit", list(package_map.keys()))
         selected_package_id = package_map[selected_package_label]
-
         package_obj = session.query(Package).filter(Package.id == selected_package_id).first()
 
         with st.form("edit_package_form"):
             edit_package_name = st.text_input("Package Name", value=package_obj.package_name or "")
+            options = ["Reels", "Posts", "Mixed"]
             edit_package_type = st.selectbox(
                 "Package Type",
-                ["Reels", "Posts", "Mixed"],
-                index=["Reels", "Posts", "Mixed"].index(package_obj.package_type) if package_obj.package_type in ["Reels", "Posts", "Mixed"] else 0
+                options,
+                index=options.index(package_obj.package_type) if package_obj.package_type in options else 0,
             )
             edit_default_price = st.number_input("Default Price", min_value=0.0, step=100.0, value=float(package_obj.default_price or 0))
             edit_description = st.text_area("Description", value=package_obj.description or "")
@@ -71,25 +70,36 @@ with tab2:
                 if not edit_package_name.strip():
                     st.error("Package name is required")
                 else:
-                    package_obj.package_name = edit_package_name.strip()
-                    package_obj.package_type = edit_package_type
-                    package_obj.default_price = edit_default_price
-                    package_obj.description = edit_description
-                    session.commit()
-                    st.success("Package updated successfully")
-                    st.rerun()
+                    duplicate = (
+                        session.query(Package)
+                        .filter(Package.package_name == edit_package_name.strip(), Package.id != package_obj.id)
+                        .first()
+                    )
+                    if duplicate:
+                        st.error("Another package with this name already exists.")
+                    else:
+                        package_obj.package_name = edit_package_name.strip()
+                        package_obj.package_type = edit_package_type
+                        package_obj.default_price = edit_default_price
+                        package_obj.description = edit_description
+                        session.commit()
+                        st.success("Package updated successfully")
+                        st.rerun()
 
             if delete_submitted:
-                session.delete(package_obj)
-                session.commit()
-                st.success("Package deleted successfully")
-                st.rerun()
+                related_contracts = session.query(Contract).filter(Contract.package_id == package_obj.id).count()
+                if related_contracts > 0:
+                    st.error("Cannot delete this package because there are contracts linked to it.")
+                else:
+                    session.delete(package_obj)
+                    session.commit()
+                    st.success("Package deleted successfully")
+                    st.rerun()
     else:
         st.info("No packages to edit")
 
 st.subheader("Packages List")
 packages = get_all_packages(session)
-
 if packages:
     df = pd.DataFrame([
         {
@@ -97,7 +107,7 @@ if packages:
             "Package Name": p.package_name,
             "Type": p.package_type,
             "Default Price": p.default_price,
-            "Description": p.description
+            "Description": p.description,
         }
         for p in packages
     ])
