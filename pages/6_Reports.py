@@ -3,8 +3,12 @@ import pandas as pd
 from database import SessionLocal
 from models import create_tables
 from services import get_package_profitability
+from auth import login_required, show_logout
 
 st.set_page_config(page_title="Reports", layout="wide")
+login_required()
+show_logout()
+
 create_tables()
 session = SessionLocal()
 
@@ -15,7 +19,6 @@ data = get_package_profitability(session)
 if data:
     df = pd.DataFrame(data)
 
-    # ===== Filters =====
     st.subheader("Filters")
 
     filter_col1, filter_col2, filter_col3 = st.columns(3)
@@ -41,7 +44,6 @@ if data:
 
     st.divider()
 
-    # ===== Report Table =====
     st.subheader("Package / Contract Profitability")
 
     display_df = filtered_df[[
@@ -65,15 +67,17 @@ if data:
         "profit": "Profit",
         "status": "Status"
     })
-    csv_data = display_df.to_csv(index=False).encode("utf-8")
-    st.download_button(
-    label="Download Report as CSV",
-    data=csv_data,
-    file_name="reports.csv",
-    mime="text/csv"
-     )
+
     if not display_df.empty:
         st.dataframe(display_df, width="stretch")
+
+        csv_data = display_df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="Download Report as CSV",
+            data=csv_data,
+            file_name="reports.csv",
+            mime="text/csv"
+        )
 
         st.subheader("Summary")
         st.write("Total Agreed Price:", filtered_df["agreed_price"].sum())
